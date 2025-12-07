@@ -1,0 +1,16 @@
+L'Intelligence Artificielle : Une Révolution Technologique
+
+L'intelligence artificielle (IA) est une branche de l'informatique qui vise à créer des systèmes capables de réaliser des tâches nécessitant normalement l'intelligence humaine.
+
+Historique
+L'IA a été fondée en tant que discipline académique en 1956. Depuis lors, elle a connu plusieurs périodes d'avancées rapides et de ralentissements.
+
+Types d'IA
+- IA faible : conçue pour une tâche spécifique (comme les assistants vocaux)
+- IA forte : hypothétique système avec une intelligence générale comparable à celle d'un humain
+
+Applications modernes
+L'IA est utilisée dans de nombreux domaines : reconnaissance d'images, traitement du langage naturel, véhicules autonomes, diagnostic médical, et bien plus encore.
+
+Apprentissage automatique
+Le machine learning est une sous-discipline de l'IA qui permet aux ordinateurs d'apprendre à partir de données sans être explicitement programmés pour chaque tâche.

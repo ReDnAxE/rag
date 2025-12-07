@@ -1,0 +1,36 @@
+Ollama : Exécuter des LLM Localement
+
+Ollama est un outil open-source qui permet d'exécuter des modèles de langage (LLM) localement sur votre machine.
+
+Installation
+Ollama peut être installé facilement sur Linux, macOS et Windows. Il suffit de télécharger l'installateur depuis le site officiel.
+
+Modèles disponibles
+Ollama supporte de nombreux modèles populaires :
+- Llama 2 et Llama 3
+- Mistral et Mixtral
+- Phi
+- Gemma
+- CodeLlama
+- Et bien d'autres
+
+Utilisation basique
+Pour télécharger un modèle : ollama pull llama2
+Pour exécuter un modèle : ollama run llama2
+Pour lister les modèles : ollama list
+
+Modelfile
+Les Modelfiles permettent de personnaliser les modèles :
+- Définir le modèle de base
+- Ajouter des paramètres système
+- Configurer la température et autres hyperparamètres
+- Intégrer des sources de données externes
+
+API REST
+Ollama fournit une API REST pour intégrer les modèles dans vos applications. L'API est compatible avec le format OpenAI.
+
+Avantages
+- Confidentialité : données traitées localement
+- Pas de coûts API
+- Fonctionne hors ligne
+- Personnalisation complète

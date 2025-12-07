@@ -1,0 +1,18 @@
+# Base de données ChromaDB (générée localement)
+chroma_db/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environnement virtuel
+venv/
+env/
+
+# Fichiers IDE
+.vscode/
+.idea/
+
+# Fichiers système
+.DS_Store

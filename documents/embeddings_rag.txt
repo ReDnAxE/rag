@@ -1,0 +1,35 @@
+Embeddings et RAG : Améliorer les LLM
+
+Les embeddings et le RAG (Retrieval-Augmented Generation) sont des techniques essentielles pour améliorer les capacités des modèles de langage.
+
+Qu'est-ce qu'un Embedding ?
+Un embedding est une représentation vectorielle d'un texte dans un espace multidimensionnel. Les textes similaires ont des vecteurs proches.
+
+Modèles d'embeddings
+- sentence-transformers (all-MiniLM, all-mpnet)
+- OpenAI embeddings
+- Embeddings intégrés dans Ollama
+- Embeddings multilingues
+
+RAG : Retrieval-Augmented Generation
+Le RAG combine la recherche d'informations avec la génération de texte :
+1. Conversion des documents en embeddings
+2. Stockage dans une base vectorielle
+3. Lors d'une requête, recherche des passages pertinents
+4. Injection du contexte dans le prompt du LLM
+5. Génération d'une réponse informée
+
+Avantages du RAG
+- Permet d'utiliser des connaissances à jour
+- Réduit les hallucinations
+- Cite les sources
+- Fonctionne avec des données privées
+- Pas besoin de réentraîner le modèle
+
+Pipeline RAG typique
+Documents → Chunking → Embeddings → Base vectorielle → Requête utilisateur → Recherche sémantique → Top-k résultats → Prompt augmenté → LLM → Réponse
+
+Outils populaires
+- LangChain : framework pour construire des applications LLM
+- LlamaIndex : outil spécialisé pour l'indexation et la recherche
+- ChromaDB : base vectorielle simple et efficace

@@ -1,0 +1,25 @@
+Python : Le Langage de Programmation Polyvalent
+
+Python est un langage de programmation de haut niveau, interprété et à usage général. Créé par Guido van Rossum et publié pour la première fois en 1991.
+
+Caractéristiques principales
+- Syntaxe claire et lisible
+- Typage dynamique
+- Gestion automatique de la mémoire
+- Grande bibliothèque standard
+- Support de la programmation orientée objet, impérative et fonctionnelle
+
+Domaines d'application
+Python est largement utilisé dans :
+- Développement web (Django, Flask)
+- Science des données et analyse
+- Intelligence artificielle et machine learning
+- Automatisation et scripts
+- Développement de jeux
+- Applications desktop
+
+Avantages
+La philosophie de Python met l'accent sur la lisibilité du code et une syntaxe qui permet aux programmeurs d'exprimer des concepts en moins de lignes de code qu'il ne serait possible dans des langages comme C++ ou Java.
+
+Écosystème
+Python dispose d'un écosystème riche avec des milliers de packages disponibles via PyPI (Python Package Index).

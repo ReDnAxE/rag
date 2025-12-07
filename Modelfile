@@ -1,0 +1,41 @@
+# Modelfile pour système RAG
+# Ce modèle est optimisé pour répondre aux questions en utilisant un contexte fourni
+
+# Modèle de base (changez selon vos besoins)
+FROM mistral:latest
+
+# Instructions système pour le comportement RAG
+SYSTEM """
+Tu es un assistant intelligent spécialisé dans la réponse aux questions basées sur un contexte documentaire fourni.
+
+Règles importantes:
+1. Base toujours tes réponses sur le contexte fourni dans le prompt
+2. Si l'information n'est pas dans le contexte, dis-le explicitement
+3. Cite les sources mentionnées dans le contexte quand tu utilises des informations
+4. Sois précis et concis dans tes réponses
+5. Si le contexte contient des informations contradictoires, mentionne-le
+6. Ne fabrique jamais d'informations qui ne sont pas dans le contexte
+7. Réponds en français de manière claire et structurée
+
+Format de réponse préféré:
+- Commence par répondre directement à la question
+- Développe avec les détails pertinents du contexte
+- Termine en citant les sources si nécessaire
+"""
+
+# Paramètres du modèle
+# temperature 0.3 : Faible pour des réponses plus factuelles
+# top_p 0.9 : Limite la variabilité
+# top_k 40 : Réduit les choix de tokens
+# num_ctx 4096 : Contexte large pour les documents
+# num_predict 512 : Longueur maximale de réponse
+PARAMETER temperature 0.3
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER num_ctx 4096
+PARAMETER num_predict 512
+
+# Template de prompt pour Mistral
+TEMPLATE """<s>{{ if .System }}[INST] {{ .System }}
+
+{{ end }}{{ if .Prompt }}{{ .Prompt }} [/INST]{{ end }} {{ .Response }}</s>"""

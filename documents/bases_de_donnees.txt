@@ -1,0 +1,27 @@
+Les Bases de Données : Fondements et Types
+
+Une base de données est un ensemble organisé d'informations structurées, généralement stockées électroniquement dans un système informatique.
+
+Types de bases de données
+
+Bases de données relationnelles (SQL)
+- Organisées en tables avec des lignes et des colonnes
+- Utilisent SQL pour les requêtes
+- Exemples : MySQL, PostgreSQL, Oracle, SQL Server
+
+Bases de données NoSQL
+- Conçues pour des modèles de données spécifiques
+- Flexibles et scalables
+- Types : Document (MongoDB), Clé-valeur (Redis), Colonnes (Cassandra), Graphe (Neo4j)
+
+Bases de données vectorielles
+- Optimisées pour stocker et rechercher des vecteurs d'embeddings
+- Utilisées en IA pour la recherche sémantique
+- Exemples : ChromaDB, Pinecone, Milvus, Weaviate
+
+ACID vs BASE
+- ACID (Atomicité, Cohérence, Isolation, Durabilité) : pour les bases relationnelles
+- BASE (Basically Available, Soft state, Eventually consistent) : pour les systèmes distribués NoSQL
+
+Choix d'une base de données
+Le choix dépend des besoins : cohérence des données, volume, type de requêtes, scalabilité, et cas d'usage spécifiques.
