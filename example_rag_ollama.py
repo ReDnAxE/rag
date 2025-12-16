@@ -13,6 +13,7 @@ import os
 os.environ['ANONYMIZED_TELEMETRY'] = 'False'
 
 import chromadb
+from chromadb.utils import embedding_functions
 import requests
 import json
 from config import CHROMA_DB_PATH, COLLECTION_NAME
@@ -33,11 +34,20 @@ class RAGSystem:
         self.ollama_model = ollama_model
         self.ollama_url = "http://localhost:11434/api/generate"
 
+        # Modèle d'embedding : all-MiniLM-L6-v2 (Sentence Transformers)
+        embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name="all-MiniLM-L6-v2"
+        )
+
         # Connecter à ChromaDB
         self.client = chromadb.PersistentClient(path=chroma_path)
-        self.collection = self.client.get_collection(name=collection_name)
+        self.collection = self.client.get_collection(
+            name=collection_name,
+            embedding_function=embedding_function
+        )
         print(f"✓ Connecté à ChromaDB")
         print(f"✓ Collection: {collection_name}")
+        print(f"✓ Modèle d'embedding: all-MiniLM-L6-v2 (384 dimensions)")
         print(f"✓ Modèle Ollama: {ollama_model}\n")
 
     def search_documents(self, query, n_results=3):

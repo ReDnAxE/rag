@@ -12,6 +12,7 @@ import os
 os.environ['ANONYMIZED_TELEMETRY'] = 'False'
 
 import chromadb
+from chromadb.utils import embedding_functions
 from config import BATCH_SIZE
 
 
@@ -32,6 +33,12 @@ class ChromaDBManager:
         self.description = description
         self.client = None
         self.collection = None
+
+        # Modèle d'embedding : all-MiniLM-L6-v2 (Sentence Transformers)
+        # Dimensions : 384, optimal pour recherche sémantique multilingue
+        self.embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name="all-MiniLM-L6-v2"
+        )
 
     def connect(self):
         """Crée la connexion au client ChromaDB."""
@@ -54,9 +61,11 @@ class ChromaDBManager:
 
         self.collection = self.client.create_collection(
             name=self.collection_name,
-            metadata={"description": self.description}
+            metadata={"description": self.description},
+            embedding_function=self.embedding_function
         )
         print(f"✓ Collection '{self.collection_name}' créée")
+        print(f"✓ Modèle d'embedding: all-MiniLM-L6-v2 (384 dimensions)")
 
     def insert_documents(self, texts, metadatas, ids, batch_size=BATCH_SIZE):
         """
@@ -90,7 +99,10 @@ class ChromaDBManager:
             Dictionnaire avec les statistiques
         """
         if not self.collection:
-            self.collection = self.client.get_collection(name=self.collection_name)
+            self.collection = self.client.get_collection(
+                name=self.collection_name,
+                embedding_function=self.embedding_function
+            )
 
         count = self.collection.count()
         return {
@@ -111,7 +123,10 @@ class ChromaDBManager:
             Résultats de la requête
         """
         if not self.collection:
-            self.collection = self.client.get_collection(name=self.collection_name)
+            self.collection = self.client.get_collection(
+                name=self.collection_name,
+                embedding_function=self.embedding_function
+            )
 
         results = self.collection.query(
             query_texts=[query_text],
