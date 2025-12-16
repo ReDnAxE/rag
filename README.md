@@ -1,140 +1,293 @@
-# ChromaDB pour Ollama - Projet RAG
+# Système RAG avec ChromaDB et Ollama
 
-Ce projet permet de créer une base de données vectorielle ChromaDB à partir de documents texte, pour l'utiliser ensuite dans un système RAG (Retrieval-Augmented Generation) avec Ollama.
+Système de Retrieval-Augmented Generation (RAG) utilisant ChromaDB pour le stockage vectoriel et Ollama pour la génération de réponses. Ce projet permet de créer une base de connaissances à partir de documents texte et d'interroger cette base avec un modèle de langage local.
+
+## Fonctionnalités
+
+- **Chargement de documents** : Support des fichiers `.txt` et `.md`
+- **Chunking avancé** : Utilisation de LlamaIndex avec plusieurs stratégies (sentence, token, semantic, window)
+- **Stockage vectoriel** : ChromaDB avec embeddings Sentence Transformers
+- **Génération de réponses** : Ollama avec streaming en temps réel
+- **Modèle personnalisé** : Configuration via Modelfile pour optimiser le RAG
+- **Mode interactif** : Interface en ligne de commande pour poser des questions
+
+## Architecture
+
+```
+Documents (.txt, .md)
+    ↓
+Chunking (LlamaIndex)
+    ↓
+Embeddings (all-MiniLM-L6-v2)
+    ↓
+ChromaDB (base vectorielle)
+    ↓
+Recherche de similarité
+    ↓
+Ollama (génération avec contexte)
+```
+
+## Prérequis
+
+- Python 3.8+
+- [Ollama](https://ollama.ai/) installé et en cours d'exécution
+- 4 Go de RAM minimum (8 Go recommandés pour les modèles plus grands)
+
+## Installation
+
+### 1. Cloner le projet
+
+```bash
+git clone <votre-repo>
+cd ia-ollama
+```
+
+### 2. Installer les dépendances Python
+
+```bash
+pip install -r requirements.txt
+```
+
+**Dépendances principales :**
+- `chromadb` : Base de données vectorielle
+- `pysqlite3-binary` : Support SQLite pour ChromaDB
+- `llama-index-core` : Framework de chunking avancé
+
+**Optionnel** (pour chunking sémantique) :
+```bash
+pip install llama-index-embeddings-huggingface
+```
+
+### 3. Installer Ollama
+
+Téléchargez et installez Ollama depuis [ollama.ai](https://ollama.ai/)
+
+### 4. Télécharger un modèle de base
+
+```bash
+ollama pull mistral
+```
+
+### 5. Créer le modèle personnalisé
+
+```bash
+ollama create rag-assistant -f Modelfile
+```
+
+## Configuration
+
+Modifiez le fichier `config.py` selon vos besoins
+
+### Stratégies de chunking disponibles
+
+| Méthode | Description | Usage recommandé |
+|---------|-------------|------------------|
+| `sentence` | Découpe par phrases | **Recommandé pour RAG** - Préserve la cohérence sémantique |
+| `token` | Découpe par tokens (tiktoken) | Documents techniques, contrôle précis de la taille |
+| `semantic` | Découpe par ruptures sémantiques | Documents longs avec changements de sujets |
+| `window` | Fenêtres contextuelles (3 phrases avant/après) | Maximum de contexte pour chaque chunk |
+
+## Utilisation
+
+### Étape 1 : Préparer vos documents
+
+Placez vos fichiers `.txt` ou `.md` dans le répertoire `documents/` :
+
+```bash
+mkdir -p documents
+cp mes_documents/*.txt documents/
+```
+
+### Étape 2 : Créer la base ChromaDB
+
+```bash
+python main.py
+```
+
+Ce script :
+1. Charge tous les documents du répertoire
+2. Les découpe en chunks selon la stratégie configurée
+3. Génère les embeddings
+4. Crée la base ChromaDB
+
+### Étape 3 : Interroger le système RAG
+
+```bash
+python example_rag_ollama.py
+```
+
+Le script :
+1. Exécute 3 questions de démonstration
+2. Lance un mode interactif pour vos propres questions
 
 ## Structure du projet
 
 ```
 ia-ollama/
-├── documents/                      # Dossier contenant les documents source
-│   ├── intelligence_artificielle.txt
-│   ├── programmation_python.txt
-│   ├── bases_de_donnees.txt
-│   ├── ollama_guide.txt
-│   └── embeddings_rag.txt
-├── chroma_db/                      # Base ChromaDB (créée après exécution)
-├── config.py                       # Configuration du projet
-├── document_loader.py              # Module de chargement des documents
-├── text_utils.py                   # Utilitaires de traitement de texte
-├── chroma_manager.py               # Gestionnaire ChromaDB
-├── main.py                         # Script principal
-├── example_rag_ollama.py           # Exemple d'utilisation avec Ollama
-└── requirements.txt                # Dépendances Python
+├── README.md                      # Ce fichier
+├── requirements.txt               # Dépendances Python
+├── config.py                      # Configuration globale
+├── Modelfile                      # Configuration du modèle Ollama
+│
+├── main.py                        # Script de création de la base
+├── example_rag_ollama.py          # Script d'interrogation (avec streaming)
+│
+├── document_loader.py             # Chargement des documents
+├── chroma_manager.py              # Gestion de ChromaDB
+│
+├── chunk_strategies/              # Stratégies de chunking
+│   ├── __init__.py
+│   ├── chunk_strategy.py          # Interface commune
+│   └── chunk_llamaindex.py        # Implémentation LlamaIndex
+│
+├── documents/                     # Vos documents (à créer)
+│   ├── document1.txt
+│   └── document2.md
+│
+└── chroma_db/                     # Base ChromaDB (générée)
 ```
 
-## Installation
+## Personnalisation
 
-1. Installez les dépendances :
-```bash
-pip3 install -r requirements.txt
-```
+### Modifier le prompt du modèle
 
-2. Assurez-vous qu'Ollama est installé sur votre système :
-```bash
-# Sur Linux
-curl -fsSL https://ollama.com/install.sh | sh
+Éditez le fichier `Modelfile` :
 
-# Ou téléchargez depuis https://ollama.com
-```
-
-## Utilisation
-
-### 1. Créer la base ChromaDB
-
-Exécutez le script principal :
-```bash
-python3 main.py
-```
-
-Ce script va :
-- Charger tous les fichiers `.txt` du dossier `documents/`
-- Découper les documents en chunks
-- Créer une base ChromaDB dans `./chroma_db/`
-- Proposer un test de requête
-
-### 2. Ajouter vos propres documents
-
-Placez simplement vos fichiers `.txt` dans le dossier `documents/` et relancez `main.py`.
-
-### 3. Utiliser avec Ollama
-
-Utilisez l'exemple fourni :
-```bash
-python3 example_rag_ollama.py
-```
-
-## Configuration
-
-Modifiez `config.py` pour ajuster les paramètres :
-
-- `DOCUMENTS_DIR` : Dossier des documents source
-- `CHROMA_DB_PATH` : Chemin de la base ChromaDB
-- `COLLECTION_NAME` : Nom de la collection
-- `CHUNK_SIZE` : Taille des chunks (en caractères)
-- `CHUNK_OVERLAP` : Chevauchement entre chunks
-
-## Utilisation dans un Modelfile Ollama
-
-Vous pouvez créer un Modelfile personnalisé qui interroge la base :
-
-```
-FROM llama3.2
+```dockerfile
+FROM mistral:latest
 
 SYSTEM """
-Tu es un assistant qui répond aux questions en utilisant le contexte fourni.
-Si tu ne trouves pas la réponse dans le contexte, dis-le clairement.
+Tu es un assistant spécialisé dans...
+[Personnalisez les instructions]
 """
+
+PARAMETER temperature 0.3
+PARAMETER num_ctx 4096
+PARAMETER num_predict 512
 ```
 
-Puis dans votre code Python, récupérez le contexte pertinent depuis ChromaDB avant d'envoyer la requête à Ollama.
+Puis recréez le modèle :
+```bash
+ollama create rag-assistant -f Modelfile
+```
 
-## Modules
+### Changer de modèle de base
 
-### config.py
-Contient tous les paramètres de configuration du projet.
+Dans `Modelfile`, modifiez la ligne `FROM` :
 
-### document_loader.py
-- `load_documents(documents_dir)` : Charge les documents depuis un dossier
-- `get_documents_summary(documents)` : Retourne les statistiques des documents
+```dockerfile
+# Modèles plus rapides
+FROM llama3.2:1b      # Très rapide, 1B paramètres
+FROM phi3:mini        # Bon compromis
 
-### text_utils.py
-- `chunk_text(text, chunk_size, overlap)` : Découpe un texte en chunks
-- `prepare_chunks_for_db(documents)` : Prépare les chunks pour ChromaDB
+# Modèles plus puissants
+FROM llama3.1:8b      # Plus précis
+FROM mixtral:8x7b     # Excellent pour RAG
+```
 
-### chroma_manager.py
-Classe `ChromaDBManager` pour gérer ChromaDB :
-- `connect()` : Connexion à la base
-- `create_collection()` : Création de la collection
-- `insert_documents()` : Insertion des documents
-- `query()` : Recherche dans la base
-- `get_stats()` : Statistiques de la collection
+### Ajuster les paramètres de chunking
 
-### main.py
-Script principal qui orchestre la création de la base.
-
-## Exemple de code RAG
+Si vos chunks sont trop grands ou trop petits, modifiez `config.py` :
 
 ```python
-import chromadb
+# Pour des chunks plus petits (réponses plus précises)
+CHUNK_SIZE = 300
+CHUNK_OVERLAP = 30
 
-# Charger la base
-client = chromadb.PersistentClient(path="./chroma_db")
-collection = client.get_collection("documents")
-
-# Rechercher des documents pertinents
-results = collection.query(
-    query_texts=["Qu'est-ce que le RAG?"],
-    n_results=3
-)
-
-# Utiliser avec Ollama
-context = "\n".join(results['documents'][0])
-# ... envoyer à Ollama
+# Pour des chunks plus grands (plus de contexte)
+CHUNK_SIZE = 800
+CHUNK_OVERLAP = 80
 ```
 
-## Notes
+## Dépannage
 
-- Les embeddings sont générés automatiquement par ChromaDB
-- Par défaut, ChromaDB utilise un modèle d'embedding intégré
-- Vous pouvez configurer ChromaDB pour utiliser des modèles d'embedding personnalisés
-- La base est persistante et peut être réutilisée sans recréation
+### Erreur : "Impossible de se connecter à Ollama"
+
+Vérifiez qu'Ollama est lancé :
+```bash
+ollama serve
+```
+
+### Erreur : "Model 'rag-assistant' not found"
+
+Créez le modèle personnalisé :
+```bash
+ollama create rag-assistant -f Modelfile
+```
+
+### La génération est très lente
+
+Solutions :
+1. Utilisez un modèle plus léger dans le Modelfile : `FROM llama3.2:1b`
+2. Réduisez `num_predict` dans le Modelfile : `PARAMETER num_predict 256`
+3. Vérifiez que vous utilisez un GPU si disponible
+
+### Les chunks sont trop grands
+
+La lenteur peut venir de chunks trop volumineux. Pour vérifier :
+
+```python
+# Dans un terminal Python
+import chromadb
+from config import CHROMA_DB_PATH, COLLECTION_NAME
+
+client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
+collection = client.get_collection(name=COLLECTION_NAME)
+results = collection.get()
+
+# Analyser les tailles
+sizes = [len(doc) for doc in results['documents']]
+print(f"Taille moyenne: {sum(sizes)/len(sizes):.0f} caractères")
+print(f"Taille max: {max(sizes)} caractères")
+```
+
+Si les chunks sont trop grands, réduisez `CHUNK_SIZE` dans `config.py` et recréez la base.
+
+### Erreur SQLite
+
+Le projet inclut un workaround pour SQLite < 3.35. Si vous avez toujours des erreurs :
+
+```bash
+pip install --upgrade pysqlite3-binary
+```
+
+## Performance et optimisation
+
+### Taille des chunks vs qualité des réponses
+
+- **Petits chunks (200-400 caractères)** : Réponses plus précises, risque de manquer du contexte
+- **Chunks moyens (500-800 caractères)** : **Recommandé** - Bon équilibre
+- **Grands chunks (1000+ caractères)** : Plus de contexte, génération plus lente
+
+### Nombre de documents récupérés
+
+Dans `example_rag_ollama.py`, vous pouvez ajuster le nombre de documents :
+
+```python
+def search_documents(self, query, n_results=3):  # Modifier ici
+    # ...
+```
+
+- `n_results=1-2` : Plus rapide, moins de contexte
+- `n_results=3-5` : **Recommandé**
+- `n_results=5+` : Plus de contexte, génération plus lente
+
+## Améliorations futures
+
+- [ ] Support d'autres formats (PDF, DOCX)
+- [ ] Interface web avec Gradio/Streamlit
+- [ ] Métriques de qualité des réponses
+- [ ] Cache des embeddings pour accélérer
+- [ ] Support de plusieurs collections ChromaDB
+- [ ] Filtrage par métadonnées
+
+## Licence
+
+Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
+
+## Ressources
+
+- [Documentation Ollama](https://ollama.ai/docs)
+- [ChromaDB Documentation](https://docs.trychroma.com/)
+- [LlamaIndex Documentation](https://docs.llamaindex.ai/)
+- [Guide sur le RAG](https://www.pinecone.io/learn/retrieval-augmented-generation/)
