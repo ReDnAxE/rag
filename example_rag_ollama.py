@@ -102,20 +102,39 @@ Instructions: Réponds à la question en te basant sur le contexte fourni ci-des
 Si la réponse n'est pas dans le contexte, dis-le clairement.
 Cite les sources quand tu utilises des informations du contexte."""
 
-        # Appeler Ollama
+        # Appeler Ollama avec streaming
         try:
             response = requests.post(
                 self.ollama_url,
                 json={
                     "model": self.ollama_model,
                     "prompt": prompt,
-                    "stream": False
+                    "stream": True
                 },
-                timeout=180  # 3 minutes pour les modèles lourds
+                timeout=180,  # 3 minutes pour les modèles lourds
+                stream=True  # Important pour recevoir le stream
             )
 
             if response.status_code == 200:
-                return response.json()['response']
+                full_response = ""
+                print("=" * 60)
+                print("RÉPONSE:")
+                print("=" * 60)
+
+                # Lire le stream ligne par ligne
+                for line in response.iter_lines():
+                    if line:
+                        try:
+                            chunk = json.loads(line)
+                            if 'response' in chunk:
+                                token = chunk['response']
+                                print(token, end='', flush=True)
+                                full_response += token
+                        except json.JSONDecodeError:
+                            continue
+
+                print("\n" + "=" * 60 + "\n")
+                return full_response
             else:
                 return f"Erreur Ollama: {response.status_code}"
 
@@ -147,14 +166,8 @@ Cite les sources quand tu utilises des informations du contexte."""
 
         print("Génération de la réponse avec Ollama...\n")
 
-        # Générer la réponse
+        # Générer la réponse (affiche automatiquement le stream)
         response = self.generate_response(question, docs)
-
-        print("=" * 60)
-        print("RÉPONSE:")
-        print("=" * 60)
-        print(response)
-        print("=" * 60 + "\n")
 
         return response
 
