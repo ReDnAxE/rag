@@ -16,7 +16,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 import requests
 import json
-from config import CHROMA_DB_PATH, COLLECTION_NAME, EMBEDDING_MODEL_NAME
+from config import CHROMA_DB_PATH, COLLECTION_NAME, EMBEDDING_MODEL_NAME, LLM_MODEL_NAME
 
 
 class RAGSystem:
@@ -75,6 +75,71 @@ class RAGSystem:
 
         return documents
 
+    def _build_context(self, context_docs):
+        """
+        Construit le contexte à partir des documents.
+
+        Args:
+            context_docs: Documents de contexte
+
+        Returns:
+            Contexte formaté
+        """
+        return "\n\n".join([
+            f"[Source: {doc['source']}]\n{doc['text']}"
+            for doc in context_docs
+        ])
+
+    def _build_prompt(self, query, context):
+        """
+        Construit le prompt pour Ollama.
+
+        Args:
+            query: Question de l'utilisateur
+            context: Contexte formaté
+
+        Returns:
+            Prompt complet
+        """
+        return f"""Contexte pertinent:
+{context}
+
+Question: {query}
+
+Instructions: Réponds à la question en te basant sur le contexte fourni ci-dessus.
+Si la réponse n'est pas dans le contexte, dis-le clairement.
+Cite les sources quand tu utilises des informations du contexte."""
+
+    def _stream_response(self, response):
+        """
+        Lit et affiche le stream de réponse d'Ollama.
+
+        Args:
+            response: Objet Response de requests avec streaming
+
+        Returns:
+            Réponse complète
+        """
+        full_response = ""
+        print("=" * 60)
+        print("RÉPONSE:")
+        print("=" * 60)
+
+        # Lire le stream ligne par ligne
+        for line in response.iter_lines():
+            if line:
+                try:
+                    chunk = json.loads(line)
+                    if 'response' in chunk:
+                        token = chunk['response']
+                        print(token, end='', flush=True)
+                        full_response += token
+                except json.JSONDecodeError:
+                    continue
+
+        print("\n" + "=" * 60 + "\n")
+        return full_response
+
     def generate_response(self, query, context_docs):
         """
         Génère une réponse avec Ollama en utilisant le contexte.
@@ -86,21 +151,9 @@ class RAGSystem:
         Returns:
             Réponse générée
         """
-        # Construire le contexte
-        context = "\n\n".join([
-            f"[Source: {doc['source']}]\n{doc['text']}"
-            for doc in context_docs
-        ])
-
-        # Construire le prompt
-        prompt = f"""Contexte pertinent:
-{context}
-
-Question: {query}
-
-Instructions: Réponds à la question en te basant sur le contexte fourni ci-dessus.
-Si la réponse n'est pas dans le contexte, dis-le clairement.
-Cite les sources quand tu utilises des informations du contexte."""
+        # Construire le contexte et le prompt
+        context = self._build_context(context_docs)
+        prompt = self._build_prompt(query, context)
 
         # Appeler Ollama avec streaming
         try:
@@ -116,25 +169,7 @@ Cite les sources quand tu utilises des informations du contexte."""
             )
 
             if response.status_code == 200:
-                full_response = ""
-                print("=" * 60)
-                print("RÉPONSE:")
-                print("=" * 60)
-
-                # Lire le stream ligne par ligne
-                for line in response.iter_lines():
-                    if line:
-                        try:
-                            chunk = json.loads(line)
-                            if 'response' in chunk:
-                                token = chunk['response']
-                                print(token, end='', flush=True)
-                                full_response += token
-                        except json.JSONDecodeError:
-                            continue
-
-                print("\n" + "=" * 60 + "\n")
-                return full_response
+                return self._stream_response(response)
             else:
                 return f"Erreur Ollama: {response.status_code}"
 
@@ -142,6 +177,18 @@ Cite les sources quand tu utilises des informations du contexte."""
             return "Erreur: Impossible de se connecter à Ollama. Assurez-vous qu'Ollama est lancé."
         except Exception as e:
             return f"Erreur: {e}"
+
+    def _print_question(self, question):
+        """Affiche la question."""
+        print(f"Question: {question}\n")
+        print("Recherche des documents pertinents...\n")
+
+    def _print_documents(self, docs):
+        """Affiche les documents trouvés."""
+        print(f"✓ {len(docs)} documents trouvés:\n")
+        for i, doc in enumerate(docs, 1):
+            print(f"  {i}. {doc['source']}")
+            print(f"     {doc['text'][:100]}...\n")
 
     def ask(self, question):
         """
@@ -153,37 +200,37 @@ Cite les sources quand tu utilises des informations du contexte."""
         Returns:
             Réponse générée avec le contexte
         """
-        print(f"Question: {question}\n")
-        print("Recherche des documents pertinents...\n")
+        self._print_question(question)
 
         # Rechercher les documents
         docs = self.search_documents(question)
-
-        print(f"✓ {len(docs)} documents trouvés:\n")
-        for i, doc in enumerate(docs, 1):
-            print(f"  {i}. {doc['source']}")
-            print(f"     {doc['text'][:100]}...\n")
+        self._print_documents(docs)
 
         print("Génération de la réponse avec Ollama...\n")
 
         # Générer la réponse (affiche automatiquement le stream)
-        response = self.generate_response(question, docs)
-
-        return response
+        return self.generate_response(question, docs)
 
 
-def main():
-    """Fonction principale de démonstration."""
+def _print_header():
+    """Affiche l'en-tête du programme."""
     print("=" * 60)
     print("Système RAG avec ChromaDB et Ollama")
     print("=" * 60 + "\n")
 
-    # Initialiser le système RAG
+
+def _initialize_rag_system():
+    """
+    Initialise le système RAG.
+
+    Returns:
+        Instance de RAGSystem ou None en cas d'erreur
+    """
     try:
-        rag = RAGSystem(
+        return RAGSystem(
             chroma_path=CHROMA_DB_PATH,
             collection_name=COLLECTION_NAME,
-            ollama_model="rag-assistant"  # Modèle personnalisé créé avec le Modelfile
+            ollama_model=LLM_MODEL_NAME  # Modèle personnalisé créé avec le Modelfile
         )
     except Exception as e:
         print(f"✗ Erreur lors de l'initialisation: {e}")
@@ -191,9 +238,16 @@ def main():
         print("1. Exécuté main.py pour créer la base ChromaDB")
         print("2. Installé Ollama")
         print("3. Créé le modèle : ollama create rag-assistant -f Modelfile")
-        return
+        return None
 
-    # Questions de démonstration
+
+def _run_demo_questions(rag):
+    """
+    Exécute les questions de démonstration.
+
+    Args:
+        rag: Instance du système RAG
+    """
     questions = [
         "Qu'est-ce que le RAG et comment ça fonctionne?",
         "Quels sont les avantages de Python?",
@@ -204,7 +258,14 @@ def main():
         rag.ask(question)
         print("\n" + "-" * 60 + "\n")
 
-    # Mode interactif
+
+def _run_interactive_mode(rag):
+    """
+    Lance le mode interactif.
+
+    Args:
+        rag: Instance du système RAG
+    """
     print("\nMode interactif (tapez 'exit' pour quitter)")
     print("-" * 60 + "\n")
 
@@ -227,6 +288,22 @@ def main():
             break
         except Exception as e:
             print(f"\n✗ Erreur: {e}\n")
+
+
+def main():
+    """Fonction principale de démonstration."""
+    _print_header()
+
+    # Initialiser le système RAG
+    rag = _initialize_rag_system()
+    if not rag:
+        return
+
+    # Questions de démonstration
+    _run_demo_questions(rag)
+
+    # Mode interactif
+    _run_interactive_mode(rag)
 
 
 if __name__ == "__main__":

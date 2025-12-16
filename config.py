@@ -5,6 +5,8 @@ Configuration pour la création de la base ChromaDB.
 # Paramètres des documents
 DOCUMENTS_DIR = "documents"
 
+LLM_MODEL_NAME = "rag-assistant"  # Modèle Ollama personnalisé pour RAG
+
 # Paramètres ChromaDB
 CHROMA_DB_PATH = "./chroma_db"
 COLLECTION_NAME = "documents"
