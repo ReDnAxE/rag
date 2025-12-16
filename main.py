@@ -7,13 +7,14 @@ Cette base pourra ensuite être utilisée avec Ollama pour du RAG.
 import os
 import sys
 from document_loader import load_documents, get_documents_summary
-from text_utils import prepare_chunks_for_db
+from chunk_strategies import prepare_chunks_for_db
 from chroma_manager import ChromaDBManager
 from config import (
     DOCUMENTS_DIR,
     CHROMA_DB_PATH,
     COLLECTION_NAME,
-    COLLECTION_DESCRIPTION
+    COLLECTION_DESCRIPTION,
+    CHUNK_METHOD
 )
 
 
@@ -41,7 +42,7 @@ def create_database():
     print(f"   → {summary['total_chars']:,} caractères au total")
 
     # 2. Découper les documents en chunks
-    print("\n2. Découpage des documents en chunks...")
+    print(f"\n2. Découpage des documents en chunks (méthode: {CHUNK_METHOD})...")
     all_texts, all_metadatas, all_ids = prepare_chunks_for_db(documents)
     print(f"\n   → Total: {len(all_texts)} chunks à insérer")
 

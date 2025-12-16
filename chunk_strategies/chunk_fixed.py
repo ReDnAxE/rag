@@ -1,5 +1,6 @@
 """
-Utilitaires pour le traitement de texte.
+Chunking par taille fixe en caractères.
+Méthode basique conservée pour compatibilité.
 """
 
 from config import CHUNK_SIZE, CHUNK_OVERLAP, MIN_CHUNK_RATIO
