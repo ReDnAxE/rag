@@ -13,7 +13,7 @@ os.environ['ANONYMIZED_TELEMETRY'] = 'False'
 
 import chromadb
 from chromadb.utils import embedding_functions
-from config import BATCH_SIZE
+from config import BATCH_SIZE, EMBEDDING_MODEL_NAME
 
 
 class ChromaDBManager:
@@ -37,7 +37,7 @@ class ChromaDBManager:
         # Modèle d'embedding : all-MiniLM-L6-v2 (Sentence Transformers)
         # Dimensions : 384, optimal pour recherche sémantique multilingue
         self.embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name="all-MiniLM-L6-v2"
+            model_name=EMBEDDING_MODEL_NAME
         )
 
     def connect(self):

@@ -14,6 +14,9 @@ from config import (
     CHROMA_DB_PATH,
     COLLECTION_NAME,
     COLLECTION_DESCRIPTION,
+    CHUNK_STRATEGY,
+    CHUNK_SIZE,
+    CHUNK_OVERLAP,
     CHUNK_METHOD
 )
 
@@ -42,8 +45,8 @@ def create_database():
     print(f"   → {summary['total_chars']:,} caractères au total")
 
     # 2. Découper les documents en chunks
-    print(f"\n2. Découpage des documents en chunks (méthode: {CHUNK_METHOD})...")
-    all_texts, all_metadatas, all_ids = prepare_chunks_for_db(documents)
+    print(f"\n2. Découpage des documents en chunks (stratégie: {CHUNK_STRATEGY})...")
+    all_texts, all_metadatas, all_ids = prepare_chunks_for_db(documents, CHUNK_STRATEGY, CHUNK_SIZE, CHUNK_OVERLAP, CHUNK_METHOD)
     print(f"\n   → Total: {len(all_texts)} chunks à insérer")
 
     # 3. Créer la base ChromaDB
@@ -82,58 +85,6 @@ def create_database():
         db_manager.close()
 
 
-def test_query():
-    """Fonction pour tester une requête sur la base."""
-    print_header("Test de requête sur la base ChromaDB")
-
-    query = "Qu'est-ce que le RAG?"
-    print(f"\nRequête: '{query}'")
-    print("\nRésultats les plus pertinents:\n")
-
-    db_manager = ChromaDBManager(
-        db_path=CHROMA_DB_PATH,
-        collection_name=COLLECTION_NAME
-    )
-
-    try:
-        db_manager.connect()
-        results = db_manager.query(query, n_results=3)
-
-        for i, (doc, metadata, distance) in enumerate(zip(
-            results['documents'][0],
-            results['metadatas'][0],
-            results['distances'][0]
-        )):
-            print(f"{i+1}. Source: {metadata['source']}")
-            print(f"   Distance: {distance:.4f}")
-            print(f"   Extrait: {doc[:200]}...")
-            print()
-
-    except Exception as e:
-        print(f"✗ Erreur lors de la requête: {e}")
-    finally:
-        db_manager.close()
-
-
-def print_usage_info():
-    """Affiche les informations d'utilisation avec Ollama."""
-    print("\n" + "=" * 60)
-    print("Utilisation avec Ollama")
-    print("=" * 60)
-    print("\nPour utiliser cette base avec Ollama dans un système RAG:")
-    print("\n1. Dans votre code Python, chargez la base:")
-    print("   import chromadb")
-    print(f"   client = chromadb.PersistentClient(path='{CHROMA_DB_PATH}')")
-    print(f"   collection = client.get_collection('{COLLECTION_NAME}')")
-    print("\n2. Recherchez les documents pertinents:")
-    print("   results = collection.query(query_texts=['votre question'], n_results=3)")
-    print("\n3. Utilisez les résultats comme contexte pour Ollama:")
-    print("   context = '\\n'.join(results['documents'][0])")
-    print("   prompt = f'Contexte: {context}\\n\\nQuestion: {votre_question}'")
-    print("\n4. Envoyez le prompt à Ollama via son API")
-    print()
-
-
 def main():
     """Point d'entrée principal."""
     try:
@@ -143,17 +94,7 @@ def main():
         if not success:
             sys.exit(1)
 
-        # Afficher les informations d'utilisation
-        print_usage_info()
 
-        # Proposer un test
-        print("Voulez-vous tester une requête? (O/n): ", end="", flush=True)
-        try:
-            response = input().strip().lower()
-            if response != 'n':
-                test_query()
-        except (EOFError, KeyboardInterrupt):
-            print("\nTest ignoré")
 
     except KeyboardInterrupt:
         print("\n\n✗ Opération annulée par l'utilisateur")

@@ -36,6 +36,7 @@ PARAMETER num_ctx 4096
 PARAMETER num_predict 512
 
 # Template de prompt pour Mistral
-TEMPLATE """<s>{{ if .System }}[INST] {{ .System }}
+# Note: Ne pas inclure <s> et </s> explicitement, Ollama les ajoute automatiquement
+TEMPLATE """{{ if .System }}[INST] {{ .System }}
 
-{{ end }}{{ if .Prompt }}{{ .Prompt }} [/INST]{{ end }} {{ .Response }}</s>"""
+{{ end }}{{ if .Prompt }}{{ .Prompt }} [/INST]{{ end }} {{ .Response }}"""

@@ -16,13 +16,13 @@ import chromadb
 from chromadb.utils import embedding_functions
 import requests
 import json
-from config import CHROMA_DB_PATH, COLLECTION_NAME
+from config import CHROMA_DB_PATH, COLLECTION_NAME, EMBEDDING_MODEL_NAME
 
 
 class RAGSystem:
     """Système RAG simple utilisant ChromaDB et Ollama."""
 
-    def __init__(self, chroma_path, collection_name, ollama_model="llama3.2"):
+    def __init__(self, chroma_path, collection_name, ollama_model):
         """
         Initialise le système RAG.
 
@@ -36,7 +36,7 @@ class RAGSystem:
 
         # Modèle d'embedding : all-MiniLM-L6-v2 (Sentence Transformers)
         embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name="all-MiniLM-L6-v2"
+            model_name=EMBEDDING_MODEL_NAME
         )
 
         # Connecter à ChromaDB
